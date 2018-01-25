@@ -25,6 +25,8 @@ import Text.ParserCombinators.Parsec.Token
 
 -- AST Definition
 
+main = putStrLn "Im running haskell"
+
 data AE where
   Num :: Int -> AE
   Plus :: AE -> AE -> AE
