@@ -25,7 +25,7 @@ import Text.ParserCombinators.Parsec.Token
 
 -- AST Definition
 
-main = putStrLn "Im running haskell"
+
 
 data AE where
   Num :: Int -> AE
@@ -98,14 +98,50 @@ parseAE = parseString expr
 -- you see fit, but do not change the function signatures.  Note that only
 -- Exercise 4 requires you to integrate the parser above.
 
-evalAE :: AE -> AE
-evalAE _ = (Num 0)
 
-evalAEMaybe :: AE -> Maybe AE
-evalAEMaybe _ = Nothing
+--Cannot allow any negative input numbers?
+main = print (evalAE (Minus (Num 3) (Num 0)))
 
-evalM :: AE -> Maybe AE
+evalAE :: AE -> Int
+evalAE (Num n) = n
+evalAE (Plus l r) = (evalAE l) + (evalAE r)
+evalAE (Minus l r) =
+  if ((evalAE l) > (evalAE r)) then error "!"
+  else (evalAE l) - (evalAE r)
+evalAE (Mult l r) = (evalAE l) * (evalAE r)
+evalAE (Div l r) =
+  if ((evalAE r) == 0) then error "!"
+  else div (evalAE l)(evalAE r)
+
+evalAEMaybe :: AE -> Maybe Int
+evalAEMaybe (Num n) = Just n
+evalAEMaybe (Plus l r) =
+  case (evalAEMaybe l) of
+    Just l2 -> case (evalAEMaybe r) of
+      Just r2 -> Just (l2 + r2)
+      Nothing -> Nothing
+    Nothing -> Nothing
+
+evalAEMaybe (Minus l r) =
+  case (evalAEMaybe l) of
+    Just l2 -> case (evalAEMaybe r) of
+      Just r2 -> if (l2 > r2) then Nothing
+                 else Just (l2 - r2)
+      Nothing -> Nothing
+    Nothing -> Nothing
+
+evalAEMaybe (Mult l r) =
+  case (evalAEMaybe l) of
+    Just l2 -> case (evalAEMaybe r) of
+      Just r2 -> Just (l2 * r2)
+      Nothing -> Nothing
+    Nothing -> Nothing
+
+--evalAEMaybe (Div l r) =
+--SOME BULLSHIT
+
+evalM :: AE -> Maybe Int
 evalM _ = Nothing
 
-interpAE :: String -> Maybe AE
+interpAE :: String -> Maybe Int
 interpAE _ = Nothing
