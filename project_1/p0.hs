@@ -1,3 +1,10 @@
+--NAME: Tim Elvart
+--KUID: 2760606
+--Date: February 6, 2018
+--Brief: This program implements three interpreter styles for the AE
+--language that we have been discussing in class.
+
+
 {-# LANGUAGE GADTs, FlexibleContexts #-}
 
 -- Imports for QuickCheck
@@ -118,7 +125,7 @@ exercise1 = do{
 
 evalAE :: AE -> Int
 evalAE (Num n) =
-  if (n > 0) then n
+  if (n >= 0) then n
   else error "!"
 evalAE (Plus l r) =
   if ((evalAE l) + (evalAE r) < 0) then error "!"
@@ -135,7 +142,7 @@ evalAE (If0 c t e) = if((evalAE c) == 0) then (evalAE e)
 
 evalAEMaybe :: AE -> Maybe Int
 evalAEMaybe (Num n) =
-  if (n > 0) then Just n
+  if (n >= 0) then Just n
   else Nothing
 evalAEMaybe (Plus l r) =
   case (evalAEMaybe l) of
@@ -175,7 +182,8 @@ evalAEMaybe (If0 c t e) =
 
 
 evalM :: AE -> Maybe Int
-evalM (Num n) = Just n
+evalM (Num n) = if(n >= 0) then Just n
+                else Nothing
 evalM (Plus l r) = do{
                 x <- evalM l;
                 y <- evalM r;
@@ -193,13 +201,19 @@ evalM (Mult l r) = do{
                 y <- evalM r;
                 return (x * y)
 }
+
 evalM (Div l r) = do{
                 x <- evalM l;
                 y <- evalM r;
-                if(y == 0) then Nothing
+                if (y == 0) then Nothing
                 else return (div x y)
+}
 
+evalM (If0 c t e) = do{
+                x <- (evalM c);
+                if (x == 0) then (evalM e)
+                else (evalM t)
 }
 
 interpAE :: String -> Maybe Int
-interpAE s = (evalAEMaybe (parseAE s))
+interpAE s = (evalM (parseAE s))
