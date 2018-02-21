@@ -142,12 +142,11 @@ evalM (If c t e) = do { x <- (evalM c);
                         (if (x == (Boolean True)) then (evalM t) else (evalM e)) }
 evalM (Mult l r) = do { x <- (evalM l);
                         y <- (evalM r);
-                        return (liftNum (*) x y)}
-evalM (Div l r) = Nothing--do { x <- (evalM l);
-                    --   y <- (evalM r);
-                      -- Just (Num 1)}
-                       --if (r == (Num 0)) then Nothing
-                       --else (liftNum (div) x y)}
+                        return (liftNum (*) x y) }
+evalM (Div l r) = do { x <- (evalM l);
+                       y <- (evalM r);
+                       if (y == (Num 0)) then Nothing
+                       else return (liftNum (div) x y) }
 
 
 evalErr :: ABE -> (Maybe ABE)
@@ -267,16 +266,23 @@ typeofM (Div l r) = do { x <- (typeofM l);
                           then Just TNum
                           else Nothing }
 -- Combined interpreter
-
 evalTypeM :: ABE -> Maybe ABE
-evalTypeM _ = Nothing
+evalTypeM a = do { x <- (typeofM a);
+                   (evalM a) }
 
 -- Optimizer
 optimize :: ABE -> ABE
-optimize e = e
+optimize (Num n) = (Num n)
+optimize (Boolean b) = (Boolean b)
+optimize (Plus x y) = (Plus (optimize x)(optimize y))
+optimize (Plus x (Num 0)) = (optimize x)
+optimize (If c t e) = (If c t e)
+optimize (If (Boolean True) t e) = (optimize t)
+optimize (If (Boolean False) t e) = (optimize e)
 
 interpOptM :: ABE -> Maybe ABE
-interpOptM _ = Nothing
+interpOptM a = (evalTypeM (optimize a))
+
 
 interpABE :: String -> Maybe ABE
-interpABE s = (evalErr (parseABE s))
+interpABE s = (evalM (parseABE s))
