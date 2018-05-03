@@ -94,7 +94,7 @@ elabCFBAE (Plus' l r) = (Plus (elabCFBAE l) (elabCFBAE r))
 elabCFBAE (Minus' l r) = (Minus (elabCFBAE l) (elabCFBAE r))
 elabCFBAE (Lambda' iden bod) = (Lambda iden (elabCFBAE bod))
 elabCFBAE (App' func arg) = (App (elabCFBAE func) (elabCFBAE arg))
-elabCFBAE (Bind' i v b) = (App (Lambda i (elabCFBAE v)) (elabCFBAE b))
+elabCFBAE (Bind' i v b) = (App (Lambda i (elabCFBAE b)) (elabCFBAE v))
 elabCFBAE (Id' name) = (Id name)
 elabCFBAE (If0' c t e) = (If0 (elabCFBAE c) (elabCFBAE t) (elabCFBAE e))
 
