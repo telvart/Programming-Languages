@@ -43,6 +43,11 @@ data FBAEVal where
 
 -- Enviornment for statically scoped eval
 
+test1 = (Bind "f" (Lambda "g" ((:->:) TNum TNum)
+                    (Lambda "x" TNum (If (IsZero (Id "x")) (Num 1)
+                                         (Mult (Id "x") (App (Id "g") (Minus (Id "x") (Num 1)))))))
+         (App (Fix (Id "f")) (Num 3)))
+
 type Env = [(String,FBAEVal)]
 
 subst :: String -> FBAE -> FBAE -> FBAE
@@ -79,9 +84,10 @@ evalM env (Plus l r) = do { (NumV l') <- (evalM env l);
 
 evalM env (Minus l r) =  do { (NumV l') <- (evalM env l);
                               (NumV r') <- (evalM env r);
-                              if (l' > r')
-                              then return (NumV (l' - r'))
-                              else Nothing }
+                              return (NumV (l' - r')) }
+                              --if (l' > r')
+                              --then )
+                              --else Nothing }
 
 evalM env (Mult l r) =  do { (NumV l') <- (evalM env l);
                              (NumV r') <- (evalM env r);
@@ -203,6 +209,9 @@ typeofM ctx (If c t e) = do { tc <- typeofM ctx c;
                                     then return te
                                     else Nothing
                               else Nothing }
+
+typeofM ctx (Fix t) = do { (d :->: r) <- typeofM ctx t ;
+                            return r }
 
 -- Interpreter
 
